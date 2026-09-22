@@ -21,6 +21,14 @@ on:
 permissions:
   contents: read
 
+env:
+  # The offline suites print Chinese progress lines. GitHub's windows-latest
+  # runner is en-US, so Python would default stdio to cp1252 and raise
+  # UnicodeEncodeError purely because of the console code page. Force UTF-8 so
+  # the result reflects the tests, not the runner locale.
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: "utf-8"
+
 jobs:
   offline:
     name: Offline tests (Windows / Python 3.12)
