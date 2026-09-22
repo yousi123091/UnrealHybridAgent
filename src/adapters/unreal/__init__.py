@@ -7,7 +7,8 @@
     UECommandletBackend 离线 UnrealEditor-Cmd -run=pythonscript（无编辑器）
     (reserved)          Remote Control HTTP（WebRemoteControl 插件）
 
-第三方 Unreal MCP **不放入本仓库**，通过配置指向外部路径（默认 E:\\MCP\\unreal-mcp）。
+第三方 Unreal MCP **不放入本仓库**，通过配置指向本机安装位置（占位符 `<UNREAL_MCP_ROOT>`，
+真实路径写入本地 `config/agent.config.json`，不随源码分发）。
 """
 
 from .commandlet import UECommandletBackend

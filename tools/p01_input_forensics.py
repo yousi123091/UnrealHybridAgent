@@ -21,9 +21,18 @@ Sections
   G  STATIC API AUDIT   -> forbidden input-blocking APIs anywhere in the stack
 
 Usage (from repo root):
-    python -c "exec(open(r'tools/p01_input_forensics.py', encoding='utf-8').read(), {'__file__': r'tools/p01_input_forensics.py'})"
+    python tools/p01_input_forensics.py
     ... --json out.json      write machine-readable evidence
     ... --no-hook            skip section D (fully non-invasive run)
+    ... --agent-tars-root <AGENT_TARS_ROOT>
+                             optional: audit the third-party Agent-TARS tree too.
+                             Without it that item is reported as skipped, never as passed.
+
+Paths
+    UHA paths are derived from this file's location (repo root), never hardcoded.
+    The optional third-party Agent-TARS root comes from --agent-tars-root, the
+    UHA_AGENT_TARS_ROOT environment variable, or local config (mcp_servers.root /
+    mcp_servers.computer_use.autostart.cwd).
 """
 
 from __future__ import annotations
@@ -423,6 +432,9 @@ def section_processes() -> dict:
 
 
 # ------------------------------------------------------------------ section G
+#: 第三方 Agent-TARS 安装根目录的环境变量名（本机可选配置，仓库不含默认路径）。
+AGENT_TARS_ENV = "UHA_AGENT_TARS_ROOT"
+
 FORBIDDEN = re.compile(
     r"BlockInput|SetWindowsHookEx|WH_MOUSE_LL|WH_KEYBOARD_LL|ClipCursor|SetCapture|"
     r"LowLevelHooks|mouse_event|keybd_event|LockWorkStation|"
@@ -431,42 +443,159 @@ FORBIDDEN = re.compile(
 )
 
 
-def section_static_audit() -> dict:
-    targets = [
-        (Path(r"E:\UnrealHybridAgent\src"), "*.py"),
-        (Path(r"E:\UnrealHybridAgent\uah"), "*.py"),
-        (Path(r"E:\UnrealHybridAgent\tools"), "*.py"),
-        (Path(r"E:\UnrealHybridAgent\tests"), "*.py"),
-        (Path(r"E:\MCP\Agent-TARS\server"), "*.js"),
-        (Path(r"E:\MCP\Agent-TARS\tests"), "*.js"),
-    ]
-    hits: list[dict] = []
-    for base, pat in targets:
-        if not base.is_dir():
+def repo_root() -> Path:
+    """UHA 仓库根目录。
+
+    由本文件位置推导（``<repo>/tools/p01_input_forensics.py`` -> ``<repo>``），
+    不依赖任何开发机绝对路径，也不依赖当前工作目录。
+    """
+    here = globals().get("__file__")
+    if here:
+        try:
+            return Path(here).resolve().parents[1]
+        except Exception:  # noqa: BLE001
+            pass
+    return Path.cwd().resolve()
+
+
+def _config_value(*dotted: str) -> str:
+    """从本机 config 里读一个字符串值；读不到返回空串。
+
+    只做尽力而为：第三方路径缺失时工具必须照常跑 UHA 自身审计。
+    """
+    cfg_file = repo_root() / "config" / "agent.config.json"
+    if not cfg_file.is_file():
+        cfg_file = repo_root() / "config" / "agent.config.example.json"
+    if not cfg_file.is_file():
+        return ""
+    try:
+        data = json.loads(cfg_file.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return ""
+    for path in dotted:
+        node = data
+        for part in path.split("."):
+            if not isinstance(node, dict) or part not in node:
+                node = None
+                break
+            node = node[part]
+        if isinstance(node, str) and node:
+            return node
+    return ""
+
+
+def resolve_agent_tars_root(cli_value: str | None = None) -> Path | None:
+    """定位第三方 Agent-TARS 安装根目录。
+
+    来源优先级（全部来自本机输入，仓库里不含任何固定路径）：
+        1. CLI 参数 ``--agent-tars-root``
+        2. 环境变量 ``UHA_AGENT_TARS_ROOT``
+        3. 本机 config：``mcp_servers.root`` / ``mcp_servers.computer_use.autostart.cwd``
+
+    找不到就返回 None —— 调用方必须把对应审计项标成 skipped，
+    **不允许**当成"通过"。
+    """
+    for cand in (
+        cli_value,
+        os.getenv(AGENT_TARS_ENV) or "",
+        _config_value("mcp_servers.root", "mcp_servers.computer_use.autostart.cwd"),
+    ):
+        if cand:
+            p = Path(cand)
+            if p.is_dir():
+                return p
+    return None
+
+
+def _scan_tree(base: Path, pattern: str) -> tuple[list[dict], bool]:
+    """扫描一个目录树，返回 (命中, 该目录是否存在)。"""
+    if not base.is_dir():
+        return [], False
+    found: list[dict] = []
+    for p in base.rglob(pattern):
+        if "__pycache__" in str(p):
             continue
-        for p in base.rglob(pat):
-            if "__pycache__" in str(p):
-                continue
-            try:
-                text = p.read_text(encoding="utf-8", errors="ignore")
-            except Exception:
-                continue
-            for m in FORBIDDEN.finditer(text):
-                line = text[: m.start()].count("\n") + 1
-                hits.append({
-                    "file": str(p), "line": line, "api": m.group(0),
-                    "code": text.splitlines()[line - 1].strip()[:140] if line - 1 < len(text.splitlines()) else "",
-                })
-    binary_findings = {}
-    libnut = Path(r"E:\MCP\Agent-TARS\node_modules\@computer-use\libnut-win32\build\Release\libnut.node")
-    if libnut.is_file():
-        blob = libnut.read_bytes()
-        for api in (b"BlockInput", b"SetWindowsHookEx", b"ClipCursor", b"SetCapture",
-                    b"SendInput", b"GetCursorPos"):
-            binary_findings[api.decode()] = api in blob
+        try:
+            text = p.read_text(encoding="utf-8", errors="ignore")
+        except Exception:  # noqa: BLE001
+            continue
+        for m in FORBIDDEN.finditer(text):
+            line = text[: m.start()].count("\n") + 1
+            lines = text.splitlines()
+            found.append({
+                "file": str(p), "line": line, "api": m.group(0),
+                "code": lines[line - 1].strip()[:140] if line - 1 < len(lines) else "",
+            })
+    return found, True
+
+
+def section_static_audit(agent_tars_root: str | None = None) -> dict:
+    """静态 API 审计。
+
+    UHA 自身代码始终被审计（路径由仓库位置推导）。
+    第三方 Agent-TARS 只在能定位到本机安装时才审计；定位不到时该项标为
+    ``skipped``，**不会**因为第三方缺失而让 UHA 自身审计无法运行，
+    也**不会**把 skipped 伪装成通过。
+    """
+    root = repo_root()
+    uha_dirs = [root / d for d in ("src", "uah", "tools", "tests")]
+
+    hits: list[dict] = []
+    uha_targets = []
+    for base in uha_dirs:
+        found, exists = _scan_tree(base, "*.py")
+        hits.extend(found)
+        uha_targets.append({"path": str(base), "exists": exists})
+
+    # --- 第三方：Agent-TARS（可选） -------------------------------------
+    at_root = resolve_agent_tars_root(agent_tars_root)
+    third_party: dict = {
+        "component": "Agent-TARS",
+        "root": str(at_root) if at_root else None,
+        "status": "ok" if at_root else "skipped",
+    }
+    binary_findings: dict = {}
+    if at_root:
+        scanned = []
+        for sub, pat in (("server", "*.js"), ("tests", "*.js")):
+            found, exists = _scan_tree(at_root / sub, pat)
+            hits.extend(found)
+            scanned.append({"path": str(at_root / sub), "exists": exists})
+        third_party["targets"] = scanned
+        libnut = (
+            at_root / "node_modules" / "@computer-use" / "libnut-win32"
+            / "build" / "Release" / "libnut.node"
+        )
+        if libnut.is_file():
+            blob = libnut.read_bytes()
+            for api in (b"BlockInput", b"SetWindowsHookEx", b"ClipCursor", b"SetCapture",
+                        b"SendInput", b"GetCursorPos"):
+                binary_findings[api.decode()] = api in blob
+            third_party["libnut"] = str(libnut)
+        else:
+            third_party["libnut"] = None
+    else:
+        third_party["reason"] = (
+            "未配置第三方 Agent-TARS 安装位置。设置 --agent-tars-root、环境变量 "
+            f"{AGENT_TARS_ENV}，或在 config 中填 mcp_servers.root / "
+            "mcp_servers.computer_use.autostart.cwd 后可审计该项。"
+        )
+
+    missing_uha = [t["path"] for t in uha_targets if not t["exists"]]
     return {
         "source_hits": hits,
+        "uha_targets": uha_targets,
+        "third_party": third_party,
         "libnut_native_imports": binary_findings,
+        "audit_complete": not missing_uha and at_root is not None,
+        "coverage": {
+            "uha": "complete" if not missing_uha else "partial",
+            "agent_tars": "complete" if at_root else "skipped",
+        },
+        "note": (
+            "policy_check 只在 coverage 为 complete 的范围内成立；"
+            "agent_tars=skipped 表示该项未审计，不是未发现问题。"
+        ),
         "policy_check": {
             "USER_INPUT_BLOCKING": any(h["api"].lower() == "blockinput" for h in hits),
             "USER_INPUT_SUPPRESSION": any("hook" in h["api"].lower() for h in hits),
@@ -492,6 +621,11 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--json", default="")
     ap.add_argument("--no-hook", action="store_true", help="skip section D (fully non-invasive)")
+    ap.add_argument(
+        "--agent-tars-root",
+        default="",
+        help="local Agent-TARS install root for the optional third-party static audit",
+    )
     args = ap.parse_args()
 
     report: dict = {
@@ -507,7 +641,9 @@ def main() -> int:
     )
     report["E_cu_service"] = _guard("E cu service", section_cu_service)
     report["F_processes"] = _guard("F processes", section_processes)
-    report["G_static_audit"] = _guard("G static audit", section_static_audit)
+    report["G_static_audit"] = _guard(
+        "G static audit", lambda: section_static_audit(args.agent_tars_root or None)
+    )
 
     if args.json:
         Path(args.json).parent.mkdir(parents=True, exist_ok=True)

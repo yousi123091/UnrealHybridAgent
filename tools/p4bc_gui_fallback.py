@@ -17,6 +17,21 @@ from src.safety.banner import build_safety_banner
 from src.desktop.calibration import find_ue_window,SessionGuiCalibrator
 from src.core.errors import TransportError
 
+def _backend_cmd():
+    """Resolve the local Computer Use backend launcher from environment.
+
+    No machine-specific path is baked into this repository. Set
+    UHA_AGENT_TARS_ROOT to the local install dir; optionally set UHA_NODE_EXE
+    if node is not on PATH. Fails loudly when unconfigured (never guesses).
+    """
+    root=os.getenv('UHA_AGENT_TARS_ROOT','')
+    if not root or not Path(root).is_dir():
+        raise RuntimeError(
+            'UHA_AGENT_TARS_ROOT is unset or not a directory; this live tool '
+            'cannot locate the local Computer Use service'
+        )
+    return [os.getenv('UHA_NODE_EXE','node'),'server/index.js','--transport','http'],root
+
 def main():
     run=ROOT/'logs/runs'/('gui-fallback-'+time.strftime('%Y%m%d-%H%M%S'));run.mkdir(parents=True)
     cfg=load_config(reload=True);cfg.data.setdefault('execution',{})['mode']='AUTO'
@@ -38,7 +53,8 @@ def main():
         script("a=next(a for a in unreal.EditorLevelLibrary.get_all_level_actors() if a.get_actor_label()=='UHAGuiProbe')\na.modify()\na.set_actor_location(unreal.Vector(0,0,80),False,False)\npayload={'changed':list(a.get_actor_location().to_tuple())}")
         sock=socket.socket();sock.bind(('127.0.0.1',0));port=sock.getsockname()[1];sock.close()
         log=(run/'backend.log').open('wb')
-        node=subprocess.Popen(['E:/node/node.exe','server/index.js','--transport','http'],cwd='E:/MCP/Agent-TARS',env={**os.environ,'COMPUTER_USE_PORT':str(port),'COMPUTER_USE_HOST':'127.0.0.1','COMPUTER_USE_DRY_RUN':'false'},stdout=log,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW)
+        cmd,cwd=_backend_cmd()
+        node=subprocess.Popen(cmd,cwd=cwd,env={**os.environ,'COMPUTER_USE_PORT':str(port),'COMPUTER_USE_HOST':'127.0.0.1','COMPUTER_USE_DRY_RUN':'false'},stdout=log,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW)
         opener=urllib.request.build_opener(urllib.request.ProxyHandler({}));url=f'http://127.0.0.1:{port}'
         for _ in range(100):
             try:

@@ -191,6 +191,7 @@ def build_bundle(config: Config | None = None, *, only: tuple[str, ...] | None =
             bundle.unreal["UE_PYTHON"] = UEPythonBackend(
                 engine_root=Path(ue["engine_root"]) if ue.get("engine_root") else None,
                 remote_exec_python_path=ue.get("remote_exec_python_path") or None,
+                editor_exe=ue.get("editor_exe") or None,
                 multicast_group=str(rec.get("multicast_group", "239.0.0.1")),
                 multicast_port=int(rec.get("multicast_port", 6766)),
                 multicast_ttl=int(rec.get("multicast_ttl", 0)),
