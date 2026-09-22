@@ -40,8 +40,8 @@
 
 | 项目 | 来源 / 版本 | License | 用来解决什么 | 为什么采用 | 可否替换 |
 |---|---|---|---|---|---|
-| **Agent-TARS Computer Use** | `E:\MCP\Agent-TARS`（本地，HTTP :8788） | 见该仓库 | 桌面键鼠、截图、DesktopLock | 本机已在用；HTTP 共享锁，避免 stdio 多进程锁分裂 | 可换其它 CU MCP，需保持 lock 语义 |
-| **GenOrca unreal-mcp + UnrealMCPython** | `E:\MCP\unreal-mcp`，v2.2.0 | Apache-2.0 | UE Actor/Level/Vision/**line_trace** | 与 UE 5.8 实测路径一致；UHA 只做 Adapter | 可换其它 UE MCP，需重做 DOMAIN_MAP |
+| **Agent-TARS Computer Use** | `<AGENT_TARS_ROOT>`（本地，HTTP :8788） | 见该仓库 | 桌面键鼠、截图、DesktopLock | 本机已在用；HTTP 共享锁，避免 stdio 多进程锁分裂 | 可换其它 CU MCP，需保持 lock 语义 |
+| **GenOrca unreal-mcp + UnrealMCPython** | `<UNREAL_MCP_ROOT>`，v2.2.0 | Apache-2.0 | UE Actor/Level/Vision/**line_trace** | 与 UE 5.8 实测路径一致；UHA 只做 Adapter | 可换其它 UE MCP，需重做 DOMAIN_MAP |
 | **pywin32** | 系统 `.venv` 已装 | PSF-2.0 | 找 UE 窗口、DPI、显示器 | Windows 原生、无重型 UI 框架 | 可 ctypes 裸调 user32，成本更高 |
 | **httpx** | `.venv` | BSD-3-Clause | MCP Streamable HTTP | 成熟、依赖清晰 | 可用 urllib，能力缩水 |
 
@@ -355,7 +355,7 @@ python uha.py quality
 
 | 约束 | 状态 |
 |---|---|
-| 不写死 `E:\` 进仓库源码 | 第三方路径仅在 **gitignore 的本机** `config/agent.config.json`；example 可空 |
+| 不写死本机盘符绝对路径进仓库源码 | 第三方路径仅在 **gitignore 的本机** `config/agent.config.json`；example 可空 |
 | 不写死分辨率/DPI/窗口 | 标定来自运行时探测 + session cache |
 | 不写死 API Key / 工程 | 配置与 env（`UHA_*`）注入 |
 | Overlay / Calibration / 锁可在别人电脑用 | 逻辑通用；依赖见 DEPENDENCIES |

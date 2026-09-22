@@ -4,7 +4,7 @@
 
 **Machine**: Windows 11 · UE 5.8.2 · Project `ExamplePalace` · Date 2026-09-20  
 **Runtime for real demos**: system Python 3.12.10（含 tkinter 8.6 / httpx / pywin32）  
-**Branch**: `phase3` · Workspace override: in-place at `E:\UnrealHybridAgent`（用户确认；Git 已安装并初始化）
+**Branch**: `phase3` · Workspace override: in-place at `<UHA_ROOT>`（用户确认；Git 已安装并初始化）
 
 ---
 
@@ -84,7 +84,7 @@
 |---|---|
 | **问题** | 项目无 Git，PATH 无 git |
 | **根因** | 本机未安装 |
-| **修复** | npmmirror 下载 Git 2.46.2 并安装；`E:\UnrealHybridAgent` 初始化；分支 `phase3` |
+| **修复** | npmmirror 下载 Git 2.46.2 并安装；`<UHA_ROOT>` 初始化；分支 `phase3` |
 | **验证** | `git log` 可用 |
 | **结果** | **PASS**（就地工作覆盖已记录） |
 
@@ -255,7 +255,7 @@ Evidence: `logs/runs/phase3_control_20260920-213622.json`（修复后复验）
 3. GUI ROI 为启发式比例，复杂 docking 布局下点击点可能偏移
 4. `visual_inspect` 的 VLM 通道本机未配置（`vlmConfigured=false`）——按设计 skipped，不是 PASS
 5. 日志曾误把 `.state`/`logs` 提交进 baseline commit；已在 phase3 分支 `git rm --cached`（文件仍在磁盘）
-6. Git 已安装于 `C:\Program Files\Git\cmd\git.exe`，新 shell 可能未进 PATH
+6. Git 已安装于 `<GIT_EXE>`，新 shell 可能未进 PATH
 7. Demo B 真机样本覆盖 GROUND/STRUCTURE/UNKNOWN；ATTACHED/HANGING 主要靠离线测试（场景暂无吊灯命名对象）
 
 ### 评审后已修复（本轮 critical）

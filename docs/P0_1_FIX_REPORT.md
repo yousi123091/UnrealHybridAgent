@@ -82,7 +82,7 @@ never fire. Replaced by `src/safety/banner_win32.py`.
 ### D-10 — third-party escape hatch documented but not implemented
 
 `@computer-use/…/config/default.json` style key `failSafeCorner` ("moving the pointer to
-(0,0) aborts the running action") is declared in `E:\MCP\Agent-TARS\server\config.js:33` and
+(0,0) aborts the running action") is declared in `<AGENT_TARS_ROOT>\server\config.js:33` and
 referenced **nowhere**. Not wired — recorded so nobody trusts it.
 
 ### D-11 — any CU step slower than 8 s EStopped the task in the middle of its own work
@@ -306,7 +306,7 @@ Exactly one item, and it is the one that used to fail:
   human hand moved a mouse during a run. Close it with:
 
   ```bash
-  E:\UnrealHybridAgent\.venv\Scripts\python.exe -m tools.p01_override_demo --human
+  <UHA_ROOT>\.venv\Scripts\python.exe -m tools.p01_override_demo --human
   ```
 
   It prints a prompt and waits up to 30 s. **Move the mouse** (do not press a key). That
@@ -345,6 +345,6 @@ Exactly one item, and it is the one that used to fail:
 `tests/test_p01_override_survival.py` · `docs/P0_1_ROOT_CAUSE.md` · `docs/P0_1_FIX_REPORT.md`
 
 **Not touched (deliberately)**
-`E:\MCP\Agent-TARS\**` — the injected-flag facts are recorded in
+`<AGENT_TARS_ROOT>\**` — the injected-flag facts are recorded in
 `tools/p01_injection_attribution_probe.py`; if the operator ever switches from
 `SetCursorPos` to `SendInput`, flag-based attribution keeps working (measured 5/5 flagged).

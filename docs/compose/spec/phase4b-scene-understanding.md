@@ -89,7 +89,7 @@ On fail: action, targets, expected, observed, failed invariants, backend, fallba
 - Heuristic VisionProvider only (no fake VLM)
 
 ### A/B Bench
-- Prefer `E:\UEAgentBench` if usable; also `scripts/phase4b_bench/` for UHA-local runs
+- Prefer `<UE_AGENT_BENCH_ROOT>` if usable; also `scripts/phase4b_bench/` for UHA-local runs
 - Experiments A–E per user brief (observation/batch/verify/GUI/semantic)
 - Metrics: success, steps, tool calls, UE RTTs, wall time, MCP calls, wrong mutation, restore success; tokens=null if unavailable
 

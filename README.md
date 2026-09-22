@@ -1,18 +1,65 @@
 # UnrealHybridAgent（UHA）
 
-**让 AI Agent 在 Unreal Engine 中完成场景查询、批量编辑、保存与结果验证。**
+[![CI](https://github.com/yousi123091/uha/actions/workflows/ci.yml/badge.svg)](https://github.com/yousi123091/uha/actions/workflows/ci.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/yousi123091/uha?include_prereleases)](https://github.com/yousi123091/uha/releases)
 
-UHA 是面向 UE5 的混合自动化运行时：把任务拆成步骤，为每一步选择执行通道，并在操作后重新读取场景状态。它将 Unreal MCP、UE Python 和桌面操作接入同一条执行流程，让场景自动化从任务规划走到可核对的结果。
+**UnrealHybridAgent / UHA —— 面向 Unreal Engine 5 的混合 AI Agent 自动化运行时。**
 
-## UHA 能做什么
+## 这是什么
 
-- **查询与检查场景**：查找 Actor，读取位置、旋转、缩放、标签和边界信息；围绕指定对象收集事实，并比较前后变化。
-- **执行多步编辑任务**：把已支持的自然语言指令或参数任务组织成计划，串联查找、检查、移动、复查与保存。
-- **批量修改与恢复**：批量处理目标对象，在变更前记录 transform，并提供恢复后读回验证。
-- **选择执行通道**：结合能力与健康状态选择 Unreal MCP、UE Python 等通道；为适用任务提供桌面键鼠操作路径。
-- **验证实际结果**：操作后独立检查场景状态，区分成功、失败和证据不足，帮助定位部分失败的具体对象。
-- **诊断与追踪执行过程**：查看后端健康状态，记录路由、执行、验证和恢复事件，便于复盘自动化任务。
-- **支持人工接管**：通过独立安全提示、输入许可检查、紧急停止和接管状态锁存，为桌面操作提供控制边界。
+UHA 让一个 AI Agent 在真实的 UE 编辑器里干活：查询场景、执行编辑、保存关卡，
+并且**在每一步之后重新读取真实状态，判断这一步到底生效了没有**。
+
+它不是 UE 插件，也不是一个聊天机器人——它是一个**运行时（runtime）**：
+把任务拆成显式步骤 → 为每步挑选执行通道 → 执行 → 独立复验 → 必要时显式降级。
+
+## 它解决什么
+
+Agent 在 UE 里干活时，最难的不是"发出一个操作"，而是这几件事：
+
+| 需要解决的 | UHA 怎么做 |
+|---|---|
+| 选哪条路执行 | 结构化通道（Unreal MCP / UE Python）优先，GUI 只在结构化够不着时才上 |
+| 执行动作 | 通过适配器统一调用，上层不直接拼 tool 名 |
+| 重新读取状态 | 写入返回值**不算证据**，操作后重新读回真实场景状态再比对 |
+| 判断是否真的成功 | `passed` / `failed` / `skipped` 三态严格分开；证据不足就是 `skipped`，绝不当成通过 |
+| 必要时 fallback | 降级链显式、可追溯；不可幂等动作（如相对位移）在宣告失败前必须先复读确认，避免重复生效 |
+| 让人类能接手 | Safety Banner + 输入 gate + Emergency Stop + Human Override 状态锁存 |
+
+## 它与普通 Computer Use 的区别
+
+**不是"LLM 看一张截图然后点鼠标"。**
+
+```
+普通 Computer Use：  看图 → 点 → 相信工具返回 → 报告完成
+UHA：               结构化工具优先 → 执行 → 重新读取真实状态 → 区分证据不足
+                    → 仅在结构化够不着时才降级到 GUI → 全过程可追溯 → 人类可接管
+```
+
+- **结构化优先**：能拿到精确值的操作一律走 Unreal MCP / UE Python，因为它们的
+  结果**可程序化复验**。GUI / 视觉通道只在第三方面板、右键菜单、视口拖拽这类
+  "结构化够不着"的场合使用。
+- **视觉不承担判断**："这个东西是不是浮空"有确定答案（包围盒底边离地高度），
+  那是算术题不是视觉题。截图只负责留证据图和证明"画面确实变了"。
+- **不做无法复验的结论**：含糊判断进不了 CI，因此不让视觉模型去承担结论。
+
+---
+
+## 导航
+
+| 想去哪 | 看这里 |
+|---|---|
+| **当前状态**（Active / Deferred / 历史报告如何解读） | [`docs/STATUS.md`](docs/STATUS.md) |
+| **快速开始** | [快速开始](#快速开始) |
+| **架构与设计取舍** | [`docs/DESIGN.md`](docs/DESIGN.md) · [执行架构](#执行架构) |
+| **演示 / 复现步骤** | [`docs/DEMO.md`](docs/DEMO.md) |
+| **实测发现（踩坑与数据）** | [`docs/FINDINGS.md`](docs/FINDINGS.md) |
+| **安全机制** | [已知限制](#已知限制) · [`P0_COMPUTER_USE_SAFETY_REPORT.md`](P0_COMPUTER_USE_SAFETY_REPORT.md) |
+| **Release 说明** | [`docs/releases/v0.1.0-rc.1.md`](docs/releases/v0.1.0-rc.1.md) |
+| **路线图** | [`ROADMAP_v0.2.md`](ROADMAP_v0.2.md) · [`docs/ROADMAP.md`](docs/ROADMAP.md) |
+| **第三方依赖** | [`docs/DEPENDENCIES.md`](docs/DEPENDENCIES.md) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) |
 
 ## 典型工作流
 
@@ -48,11 +95,18 @@ Copy-Item config/agent.config.example.json config/agent.config.json
 .\.venv\Scripts\python.exe uha.py providers
 ```
 
-真实配置留在本地。公开场景语义配置使用 `example_palace` 名称，可作为项目配置的参考。
+真实配置留在本地（`config/agent.config.json` 已被 gitignore）。公开场景语义配置
+使用 `example_palace` 名称，可作为项目配置的参考。
 
 ## v0.1 预发布
 
-本次提供 UHA 源码与测试，适合在自己的验证工程中体验场景自动化。发布副本已完成本机新虚拟环境安装、11 组 UHA / 发布范围回归与 169 个 Python 文件语法检查。
+本次提供 UHA 源码与测试，适合在自己的验证工程中体验场景自动化。发布副本已完成
+本机新虚拟环境安装、11 组 UHA / 发布范围回归与 169 个 Python 文件语法检查。
+
+当前 Release：**`v0.1.0-rc.1`**。
+**权威状态见 [`docs/STATUS.md`](docs/STATUS.md)** —— 包含 Active 功能、Deferred 项
+（UAH HUD / standalone 入口 / legacy ControlOverlay 等本版本均不启用），
+以及历史报告的解读规则。
 
 查看 [v0.1.0-rc.1 版本说明](docs/releases/v0.1.0-rc.1.md)。
 
@@ -155,10 +209,26 @@ python uha.py run --skill actor_move --actor Hall_Floor --axis z --delta 20
 python uha.py demo1 --actor Hall_Floor --delta 20
 python uha.py demo2 --ground-ref EXT_Plaza_Central --region="-7500,-6500,-3700,-2700" --delta 400
 
-# 6. 离线回归测试（不需要 UE）
-python tests/test_offline.py     # 195 项
-python tests/test_router.py      #  24 项
+# 6. 离线回归测试（不需要 UE / 不需要 GUI / 不需要外部服务）
+python tests/test_offline.py              # 248 项
+python tests/test_router.py               #  25 项
+python tests/test_phase2.py               #  85 项
+python tests/test_p01_override_survival.py#  16 项
+python tests/test_p4bc.py                 #  16 项
+python tests/test_phase4.py               #  13 项
+python tests/test_phase3.py               #  11 项
+python tests/test_p0_safety.py            #   9 项
+python tests/test_phase4b.py              #   6 项
+python tests/test_p01_human_override.py   #   6 项
+python -m unittest discover -s tests -p "test_release_scope.py"   # 3 项
 ```
+
+以上 11 个套件（共 438 项）在 **Windows / Python 3.12** 上实测通过，也是
+[CI](.github/workflows/ci.yml) 运行的范围。
+
+**不在 CI 内**：`tests/smoke_computer_use.py` 以及 `tools/p4bc_*`、`tools/p01_*`
+等需要真实 UE、物理鼠标键盘、真人接管或外部 MCP 服务的验证。它们是 manual /
+live validation，**不会**被 mock 成通过。
 
 **Demo2 为什么必须给 `--ground-ref`**：这是本项目最硬的一条实测结论。见下面一节。
 
@@ -213,13 +283,34 @@ artifacts/    截图等产物
 
 ## 文档
 
+### 当前状态与核心文档
+
 | 文档 | 内容 |
 |---|---|
+| [`docs/STATUS.md`](docs/STATUS.md) | **权威当前状态**：Active / Deferred / 历史报告如何解读 |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | 分层架构、数据流、关键设计取舍与理由 |
 | [`docs/FINDINGS.md`](docs/FINDINGS.md) | **实测发现**：五条踩坑记录与数据（含两次"看起来正常其实错了"的复盘） |
 | [`docs/DEMO.md`](docs/DEMO.md) | Demo1 / Demo2 的复现步骤、真实输出与故障排查 |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | 第一版没做的事，以及为什么 |
-| [`docs/FINAL_REPORT.md`](docs/FINAL_REPORT.md) | 阶段总结：交付了什么、验证到什么程度、还差什么 |
+| [`docs/releases/v0.1.0-rc.1.md`](docs/releases/v0.1.0-rc.1.md) | v0.1.0-rc.1 版本说明 |
+| [`docs/DEPENDENCIES.md`](docs/DEPENDENCIES.md) | 第三方依赖、如何指向本机安装、是否可替换 |
+| [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) | 许可与归属声明（本仓库代码为 MIT） |
+
+### 历史报告（开发过程证据，不是当前能力声明）
+
+以下文件记录**开发过程**中的设计、验收、复盘与根因分析。它们有历史价值，
+但**不代表 `v0.1.0-rc.1` 当前提供的能力**。判断当前状态请以
+[`docs/STATUS.md`](docs/STATUS.md) 为准。
+
+| 类别 | 文件 |
+|---|---|
+| Phase 报告 | [`PHASE4B_REPORT.md`](PHASE4B_REPORT.md) · [`PHASE4C_REPORT.md`](PHASE4C_REPORT.md) · [`docs/PHASE2_REPORT.md`](docs/PHASE2_REPORT.md) · [`docs/PHASE3_REPORT.md`](docs/PHASE3_REPORT.md) · [`docs/PHASE4A_REPORT.md`](docs/PHASE4A_REPORT.md) |
+| 安全与人工接管 | [`P0_COMPUTER_USE_SAFETY_REPORT.md`](P0_COMPUTER_USE_SAFETY_REPORT.md) · [`docs/P0_1_ROOT_CAUSE.md`](docs/P0_1_ROOT_CAUSE.md) · [`docs/P0_1_FIX_REPORT.md`](docs/P0_1_FIX_REPORT.md) · [`docs/P0_1_REVALIDATION_REPORT.md`](docs/P0_1_REVALIDATION_REPORT.md) · [`docs/P0_1_HUMAN_ACCEPTANCE_REPORT.md`](docs/P0_1_HUMAN_ACCEPTANCE_REPORT.md) · [`docs/P0_1_FINAL_VALIDATION_REPORT.md`](docs/P0_1_FINAL_VALIDATION_REPORT.md) |
+| UAH 子系统（本版本 Deferred） | [`UAH_ARCHITECTURE.md`](UAH_ARCHITECTURE.md) · [`UAH_PHASE1_REPORT.md`](UAH_PHASE1_REPORT.md) · [`UAH_PHASE1_1_REPORT.md`](UAH_PHASE1_1_REPORT.md) |
+| 整体可行性 / 清理 / 性能 | [`UHA_V0_1_FEASIBILITY_REPORT.md`](UHA_V0_1_FEASIBILITY_REPORT.md) · [`docs/PERFORMANCE_AND_QUALITY_REPORT.md`](docs/PERFORMANCE_AND_QUALITY_REPORT.md) · [`docs/CODEBASE_CLEANUP_REPORT.md`](docs/CODEBASE_CLEANUP_REPORT.md) · [`docs/FINAL_REPORT.md`](docs/FINAL_REPORT.md) · [`docs/PRE_P4BC_AUDIT.md`](docs/PRE_P4BC_AUDIT.md) |
+
+> 这些报告中的磁盘路径已匿名化为 `<UHA_ROOT>` / `<PYTHON_EXE>` / `<UE_ROOT>`
+> 等占位符；**历史测量数值未做任何改写**。
 
 ---
 
@@ -237,8 +328,11 @@ artifacts/    截图等产物
 
 ## 许可
 
-本仓库自有代码以 MIT 发布，见 [`LICENSE`](LICENSE)。
-第三方依赖各自遵循其原许可（详见 LICENSE 末尾的第三方说明）。
+本仓库自有代码以 **MIT** 发布，见 [`LICENSE`](LICENSE)。
+
+第三方服务（Unreal MCP / Agent-TARS / Unreal Engine）**不随本仓库分发**，
+各自遵循其原许可，声明见 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+与 [`docs/DEPENDENCIES.md`](docs/DEPENDENCIES.md)。
 
 
 ## 当前版本范围

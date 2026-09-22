@@ -5,7 +5,7 @@
 # UAH 架构判断（Universal Agent HUD）
 
 > 本文是**审计结论 + 架构决策**，写在动手之前（后续按实测结果回填了修正）。
-> 所有判断来自对 `E:/UnrealHybridAgent` 的实际代码阅读与实机执行，不是假设。
+> 所有判断来自对 `<UHA_ROOT>` 的实际代码阅读与实机执行，不是假设。
 > 审计时间：2026-09-21。基线提交：`2f45122 fix(p0): computer use emergency stop, safety banner,
 > input gate, fail-closed CU`。
 
@@ -15,7 +15,7 @@
 
 | 项目 | 实际情况 |
 |---|---|
-| 主项目位置 | `E:/UnrealHybridAgent`（分支 `p0-cu-safety`，HEAD `2f45122`） |
+| 主项目位置 | `<UHA_ROOT>`（分支 `p0-cu-safety`，HEAD `2f45122`） |
 | 语言 | Python 3.13（`.venv` = 3.13.14，`home` 指向托管解释器） |
 | 现存 UI **①** | `src/desktop/overlay.py::ControlOverlay`（tkinter 任务浮窗，6 行 Label + 3 个按钮） |
 | 现存 UI **②** | `src/safety/banner.py::SafetyBanner`（P0 安全横幅，置顶、不抢焦点、只管 Computer Use 安全态） |
@@ -229,7 +229,7 @@ from ..core.session_control import SessionController, TaskPhase   # 仅此一项
 实际落地结构（相对需求 §十六 建议版的**两处调整**，见 §10.2）：
 
 ```
-E:/UnrealHybridAgent/
+<UHA_ROOT>/
 ├─ uha.py                      ← 只追加一个 try/except 块（~6 行）
 ├─ uah/                        ← ★ 新子项目
 │  ├─ __init__.py
@@ -340,8 +340,8 @@ E:/UnrealHybridAgent/
 
 | 解释器 | tkinter | winsound |
 |---|---|---|
-| `E:/UnrealHybridAgent/.venv/Scripts/python.exe`（3.13.14，项目运行时） | ❌ 无 | ✅ |
-| `C:/Users/PUBLIC_USER/AppData/Local/Programs/Python/Python312/python.exe`（3.12.10，系统） | ✅ 有 | ✅ |
+| `<UHA_ROOT>/.venv/Scripts/python.exe`（3.13.14，项目运行时） | ❌ 无 | ✅ |
+| `<PYTHON_EXE>`（3.12.10，系统） | ✅ 有 | ✅ |
 | 托管 3.13.12 | ❌ 无 | ✅ |
 
 **这是审计中最有实际影响的一条**：tkinter HUD 只能用**系统 Python 3.12** 跑，

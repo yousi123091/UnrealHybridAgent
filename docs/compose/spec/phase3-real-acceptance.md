@@ -54,7 +54,7 @@ Phase 3 must answer ten acceptance questions with real evidence, or mark FAIL/PA
 
 ### Workspace override (user decision)
 
-- Project path: `E:\UnrealHybridAgent`
+- Project path: `<UHA_ROOT>`
 - User approved: in-place work + attempt Git install; if Git unavailable, document and continue acceptance.
 - No nested worktree required for this machine-specific validation session.
 - Feature doc path remains `docs/compose/spec/phase3-real-acceptance.md`.
@@ -63,7 +63,7 @@ Phase 3 must answer ten acceptance questions with real evidence, or mark FAIL/PA
 ### Runtime override (user decision)
 
 - Primary UHA Python for Phase 3: **system Python 3.12**
-  `C:\Users\PUBLIC_USER\AppData\Local\Programs\Python\Python312\python.exe`
+  `<PYTHON_EXE>`
   because it has tkinter (Overlay) + httpx + pywin32.
 - `.venv` (3.13) remains available for offline regression if needed.
 - `.venv-mcp` remains the Unreal MCP stdio server runtime.

@@ -50,7 +50,7 @@
 ---
 
 
-日期：2026-09-21。仓库：`E:/UnrealHybridAgent`，本次基线 HEAD `0108a930fd02d0e33f24565bd7475fefba89c94e`，含大量既有未提交改动。
+日期：2026-09-21。仓库：`<UHA_ROOT>`，本次基线 HEAD `0108a930fd02d0e33f24565bd7475fefba89c94e`，含大量既有未提交改动。
 
 **P4B = BLOCKED。原报告所称自动测试通过属实，但完整安全验收没有完成；本次真实故障注入进一步复现两项 FAIL。**
 
@@ -85,7 +85,7 @@
 
 ## 3. 真实后端边界与连接问题
 
-检查了 `E:/MCP/Agent-TARS/server/operator.js`、`server/tools.js`、`server/lock.js` 与实际安装的 `@ui-tars/operator-nut-js/dist/index.js`。mouseSpeed=3600 仍在；tools 在进入动作前检查锁，release 仅释放逻辑锁；没有逐步输入检查或正在执行动作的取消确认。failSafeCorner 配置仍无执行路径。第三方后端源文件未修改。
+检查了 `<AGENT_TARS_ROOT>/server/operator.js`、`server/tools.js`、`server/lock.js` 与实际安装的 `@ui-tars/operator-nut-js/dist/index.js`。mouseSpeed=3600 仍在；tools 在进入动作前检查锁，release 仅释放逻辑锁；没有逐步输入检查或正在执行动作的取消确认。failSafeCorner 配置仍无执行路径。第三方后端源文件未修改。
 
 最初健康 GET 可达而 MCP HTTP 502；仅在测试进程设置 NO_PROXY 后真实演示通过。已在项目自己的 `src/adapters/mcp_client.py` 中对显式 loopback URL 关闭环境代理继承，远端 URL 保持原行为。后续独立真实后端生命周期测试未依赖 NO_PROXY 即可运行。
 
@@ -127,33 +127,33 @@ UHA 层已做到：持久终态锁存、拒绝后续输入、保留失败账本�
 
 ## 实际命令、退出码与日志
 
-工作目录均为 `E:/UnrealHybridAgent`。以下为实际子进程命令；完整 argv、耗时及日志路径也保存在各 JSON 清单。命令中的 `.venv` 指项目 Python 3.13，GUI 使用系统 Python 3.12.10。
+工作目录均为 `<UHA_ROOT>`。以下为实际子进程命令；完整 argv、耗时及日志路径也保存在各 JSON 清单。命令中的 `.venv` 指项目 Python 3.13，GUI 使用系统 Python 3.12.10。
 
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe tests/test_offline.py` — exit=0，248/248，0.96 s；日志 `evidence/validation-final_verified/tests_test_offline.py.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe uah/tests/test_uah_phase1.py` — exit=0，152/152，21.43 s；日志 `evidence/validation-final_verified/uah_tests_test_uah_phase1.py.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe tests/test_phase2.py` — exit=0，85/85，1.06 s；日志 `evidence/validation-final_verified/tests_test_phase2.py.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe tests/test_router.py` — exit=0，25/25，0.14 s；日志 `evidence/validation-final_verified/tests_test_router.py.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe tests/test_p01_override_survival.py` — exit=0，16/16，0.63 s；日志 `evidence/validation-final_verified/tests_test_p01_override_survival.py.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe tests/test_phase4.py` — exit=0，13/13，0.47 s；日志 `evidence/validation-final_verified/tests_test_phase4.py.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe tests/test_phase3.py` — exit=0，11/11，0.25 s；日志 `evidence/validation-final_verified/tests_test_phase3.py.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe tests/test_p0_safety.py` — exit=0，9/9，0.3 s；日志 `evidence/validation-final_verified/tests_test_p0_safety.py.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe tests/test_p01_human_override.py` — exit=0，6/6，3.12 s；日志 `evidence/validation-final_verified/tests_test_p01_human_override.py.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe tests/test_phase4b.py` — exit=0，6/6，0.44 s；日志 `evidence/validation-final_verified/tests_test_phase4b.py.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe tests/test_offline.py` — exit=0，248/248，0.96 s；日志 `evidence/validation-final_verified/tests_test_offline.py.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe uah/tests/test_uah_phase1.py` — exit=0，152/152，21.43 s；日志 `evidence/validation-final_verified/uah_tests_test_uah_phase1.py.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe tests/test_phase2.py` — exit=0，85/85，1.06 s；日志 `evidence/validation-final_verified/tests_test_phase2.py.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe tests/test_router.py` — exit=0，25/25，0.14 s；日志 `evidence/validation-final_verified/tests_test_router.py.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe tests/test_p01_override_survival.py` — exit=0，16/16，0.63 s；日志 `evidence/validation-final_verified/tests_test_p01_override_survival.py.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe tests/test_phase4.py` — exit=0，13/13，0.47 s；日志 `evidence/validation-final_verified/tests_test_phase4.py.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe tests/test_phase3.py` — exit=0，11/11，0.25 s；日志 `evidence/validation-final_verified/tests_test_phase3.py.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe tests/test_p0_safety.py` — exit=0，9/9，0.3 s；日志 `evidence/validation-final_verified/tests_test_p0_safety.py.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe tests/test_p01_human_override.py` — exit=0，6/6，3.12 s；日志 `evidence/validation-final_verified/tests_test_p01_human_override.py.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe tests/test_phase4b.py` — exit=0，6/6，0.44 s；日志 `evidence/validation-final_verified/tests_test_phase4b.py.log`。
 
 附加验收：
 
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe uah/tests/test_phase11.py` — exit=0，6.72 s；日志 `evidence/checks/phase11_verified.log`。
-- `C:\Users\PUBLIC_USER\AppData\Local\Programs\Python\Python312\python.exe uah/tests/gui_smoke.py` — exit=0，6.0 s；日志 `evidence/checks/gui_dashboard.log`。
-- `C:\Users\PUBLIC_USER\AppData\Local\Programs\Python\Python312\python.exe uah/tests/compact_smoke.py` — exit=0，11.24 s；日志 `evidence/checks/compact_final_verified.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe -m uah.tools.uah selftest` — exit=0，0.55 s；日志 `evidence/checks/selftest.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe uah/tests/perf_probe.py` — exit=0，13.61 s；日志 `evidence/checks/performance.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe uha.py demo1 --actor Hall_Floor --delta 20 --dry-run` — exit=0，8.15 s；日志 `evidence/checks/cli_progress.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe <PRIVATE_EVIDENCE_PATH>` — exit=0，1.19 s；日志 `evidence/checks/diagnostics.log`。
-- `NO_PROXY=127.0.0.1,localhost E:\UnrealHybridAgent\.venv\Scripts\python.exe -m tools.p01_override_demo` — exit=0，2.84 s；日志 `evidence/checks/live_no_proxy.log`。
-- `C:\Users\PUBLIC_USER\AppData\Local\Programs\Python\Python312\python.exe uah/tests/live_scratch.py` — exit=1，13.77 s；日志 `evidence/checks/live_scratch_crash.log`。
-- `E:\UnrealHybridAgent\.venv\Scripts\python.exe tools/p01_lifecycle_revalidation.py` — exit=1，2.71 s；日志 `evidence/checks/lifecycle_verified.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe uah/tests/test_phase11.py` — exit=0，6.72 s；日志 `evidence/checks/phase11_verified.log`。
+- `<PYTHON_EXE> uah/tests/gui_smoke.py` — exit=0，6.0 s；日志 `evidence/checks/gui_dashboard.log`。
+- `<PYTHON_EXE> uah/tests/compact_smoke.py` — exit=0，11.24 s；日志 `evidence/checks/compact_final_verified.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe -m uah.tools.uah selftest` — exit=0，0.55 s；日志 `evidence/checks/selftest.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe uah/tests/perf_probe.py` — exit=0，13.61 s；日志 `evidence/checks/performance.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe uha.py demo1 --actor Hall_Floor --delta 20 --dry-run` — exit=0，8.15 s；日志 `evidence/checks/cli_progress.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe <PRIVATE_EVIDENCE_PATH>` — exit=0，1.19 s；日志 `evidence/checks/diagnostics.log`。
+- `NO_PROXY=127.0.0.1,localhost <UHA_ROOT>\.venv\Scripts\python.exe -m tools.p01_override_demo` — exit=0，2.84 s；日志 `evidence/checks/live_no_proxy.log`。
+- `<PYTHON_EXE> uah/tests/live_scratch.py` — exit=1，13.77 s；日志 `evidence/checks/live_scratch_crash.log`。
+- `<UHA_ROOT>\.venv\Scripts\python.exe tools/p01_lifecycle_revalidation.py` — exit=1，2.71 s；日志 `evidence/checks/lifecycle_verified.log`。
 
-语法：`E:/UnrealHybridAgent/.venv/Scripts/python.exe <PRIVATE_EVIDENCE_PATH>`，exit=0；逐文件调用 `py_compile.compile(..., doraise=True)`，127 个仓库 Python 文件，**syntax failures=0**。范围为所有 Git 跟踪及未忽略的新 Python 文件；不编译外部 `.venv` 依赖。清单 `evidence/compile.json`。`git diff --check` exit=0。
+语法：`<UHA_ROOT>/.venv/Scripts/python.exe <PRIVATE_EVIDENCE_PATH>`，exit=0；逐文件调用 `py_compile.compile(..., doraise=True)`，127 个仓库 Python 文件，**syntax failures=0**。范围为所有 Git 跟踪及未忽略的新 Python 文件；不编译外部 `.venv` 依赖。清单 `evidence/compile.json`。`git diff --check` exit=0。
 
 
 ## 人工验收补记（2026-09-21 22:44–22:47）
