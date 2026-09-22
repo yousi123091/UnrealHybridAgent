@@ -11,7 +11,17 @@ config/agent.config.json
 config/local.*.json
 *.key
 *.pem
+*.p12
+*.pfx
+*.ppk
+*.token
+id_rsa*
+credentials.json
+*credentials*.json
 secrets.json
+secrets/
+.aws/
+.gcp/
 
 # --- Python --------------------------------------------------------------------
 __pycache__/
@@ -105,5 +115,10 @@ desktop.ini
 /outputs/
 /publish-audit/
 /release-assets/
+/release-tmp/
+/.release/
+
+# Never ignore these: package markers and CI definitions must stay in the repo
 !**/__init__.py
 !**/__main__.py
+!.github/**
