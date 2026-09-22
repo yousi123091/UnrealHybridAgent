@@ -8,7 +8,7 @@
 
 **Universal Agent HUD —— 通用 Agent presence / status 层**
 
-审计与实施时间：2026-09-21 · 仓库：`E:/UnrealHybridAgent` · 分支 `p0-cu-safety`
+审计与实施时间：2026-09-21 · 仓库：`<UHA_ROOT>` · 分支 `p0-cu-safety`
 基线提交：`2f45122`（实施期间另一会话推到了 `0108a93`，见 §Files Changed 的说明）
 
 一句话结论：**UHA 现在有一条统一的机器可读状态出口，它同时驱动 UHA 进程内的展示侧
@@ -203,7 +203,7 @@
   "timestamp": 1789991933.249,
   "agent":   { "id": "uha", "name": "UHA", "type": "uha" },
   "project": { "name": "ExamplePalace",
-               "path": "E:/unrealproject/ExamplePalace" },
+               "path": "<UE_PROJECT_ROOT>/ExamplePalace" },
   "status": "RUNNING",
   "task": {
     "id": null, "name": "demo1_raise_and_save",
@@ -516,7 +516,7 @@ b.emit(agent="ExampleAgent", status="done")
 ### 8.1 主测试套件
 
 ```bash
-E:/UnrealHybridAgent/.venv/Scripts/python.exe uah/tests/test_uah_phase1.py
+<UHA_ROOT>/.venv/Scripts/python.exe uah/tests/test_uah_phase1.py
 ```
 
 **结果：全部通过（152 项），用时 49.1s / 48.3s（连跑两次均通过）。**
@@ -576,7 +576,7 @@ test_phase4b.py     exit=0   test_phase4b: 6/6
 
 **真实窗口冒烟**（必须用带 tkinter 的解释器）：
 ```bash
-"C:/Users/PUBLIC_USER/AppData/Local/Programs/Python/Python312/python.exe" uah/tests/gui_smoke.py
+"<PYTHON_EXE>" uah/tests/gui_smoke.py
 → 窗口冒烟：全部通过（19 项）
 ```
 覆盖：窗口真的建出来（`320x640`）、置顶生效、两张卡片建出且挂进窗口树、

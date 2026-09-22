@@ -19,32 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-================================================================================
-第三方组件说明
-================================================================================
-
-本项目**不包含**也不修改任何第三方源码。它通过进程间协议（TCP / HTTP）
-与外部服务通信，因此许可义务集中在"分发依赖"而非"分发代码"上。
-
-1) GenOrca / unreal-mcp  (Apache License 2.0)
-   用途：作为 Unreal MCP 通道的服务端实现，运行在 UE 编辑器进程内，
-        监听 127.0.0.1:12029。
-   关系：本项目只实现**客户端适配层**（src/adapters/unreal/unreal_mcp.py），
-        按对方公开的工具契约（domain + action + params）调用，不链接其代码。
-   Apache-2.0 要点：允许商用与修改，需保留版权与许可声明，需标注修改；
-        并附带专利授权条款。若将来把对方代码收进本仓库，必须一并保留
-        其 LICENSE 与 NOTICE 文件。
-   仓库：https://github.com/GenOrca/unreal-mcp
-
-2) Agent-TARS（Computer Use / Streamable HTTP MCP）
-   用途：桌面级 GUI 通道（截图、点击、热键）。
-   关系：同样是客户端适配，通过 HTTP 调用 127.0.0.1:8788。
-   许可：以对方仓库声明为准。
-
-3) Unreal Engine / UnrealEditorPythonScripts
-   用途：UE 侧 Python 逃生舱（util.execute_python）。
-   注意：UE 本身受 Epic 的 EULA 约束，不在本仓库分发范围内。
-
-> 若你计划**分发**本项目的可执行产物，请自行核对上述每一项的当前许可条款；
-> 本文件仅为在撰写时点的记录，不构成法律意见。

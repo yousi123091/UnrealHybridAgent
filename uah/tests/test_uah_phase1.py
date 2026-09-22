@@ -178,7 +178,7 @@ def _uha_adapter(fx: HubFixture, *, heartbeat_s: float = 0.0, project=None) -> U
         agent_id="uha",
         agent_name="UHA",
         agent_type="uha",
-        project=project or {"name": "ExamplePalace", "path": "E:/unrealproject/ExamplePalace"},
+        project=project or {"name": "ExamplePalace", "path": "<UE_PROJECT_ROOT>/ExamplePalace"},
         phase_label="Phase 4B",
         heartbeat_s=heartbeat_s,
     )
@@ -206,7 +206,7 @@ def _uha_adapter_with_reminder(
         agent_id="uha",
         agent_name="UHA",
         agent_type="uha",
-        project={"name": "ExamplePalace", "path": "E:/unrealproject/ExamplePalace"},
+        project={"name": "ExamplePalace", "path": "<UE_PROJECT_ROOT>/ExamplePalace"},
         phase_label="Phase 4B",
         heartbeat_s=heartbeat_s,
     )
@@ -881,7 +881,7 @@ def test_11_acceptance_and_single_source() -> None:
     # --- E: HUD 能显示需求 §十二 要求的全部字段 ---
     snap = AgentSnapshot(
         agent=AgentRef(id="u", name="UHA", type="uha"),
-        project=ProjectRef(name="Proj", path="E:/unrealproject/ExamplePalace"),
+        project=ProjectRef(name="Proj", path="<UE_PROJECT_ROOT>/ExamplePalace"),
         status=Status.RUNNING,
         task=TaskState(name="actor_move", phase="Phase 4B",
                        stage="Environment Perception", step=3, total_steps=7),

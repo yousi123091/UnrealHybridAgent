@@ -1,0 +1,94 @@
+name: CI
+
+# UHA public CI — OFFLINE TESTS ONLY
+#
+# Every suite below was executed on Windows / Python 3.12 and passes without a
+# real Unreal Engine editor, without physical mouse/keyboard, without a real
+# human takeover, without a GUI and without external MCP services.
+#
+# Deliberately NOT run here (manual / live validation only):
+#   tests/smoke_computer_use.py   - needs a live Computer Use MCP service
+#   tools/p4bc_*.py, tools/p01_*  - need real UE, real input, or real takeover
+#
+# Those must never be mocked into a green result. See docs/STATUS.md.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # The offline suites print Chinese progress lines. GitHub's windows-latest
+  # runner is en-US, so Python would default stdio to cp1252 and raise
+  # UnicodeEncodeError purely because of the console code page. Force UTF-8 so
+  # the result reflects the tests, not the runner locale.
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: "utf-8"
+
+jobs:
+  offline:
+    name: Offline tests (Windows / Python 3.12)
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Python syntax / compile check (whole repository)
+        run: |
+          python -m compileall -q -x "(\.git|\.venv|\.venv-mcp|node_modules|__pycache__)" .
+
+      - name: Run offline test suites
+        shell: pwsh
+        run: |
+          $suites = @(
+            "tests/test_offline.py",
+            "tests/test_router.py",
+            "tests/test_phase2.py",
+            "tests/test_phase3.py",
+            "tests/test_phase4.py",
+            "tests/test_phase4b.py",
+            "tests/test_p4bc.py",
+            "tests/test_p0_safety.py",
+            "tests/test_p01_human_override.py",
+            "tests/test_p01_override_survival.py"
+          )
+          $failed = @()
+          foreach ($s in $suites) {
+            Write-Host "=== $s ==="
+            python $s
+            if ($LASTEXITCODE -ne 0) { $failed += $s }
+          }
+          if ($failed.Count -gt 0) {
+            Write-Host "FAILED SUITES: $($failed -join ', ')"
+            exit 1
+          }
+
+      - name: Release scope gates (deferred presentation layers must stay off)
+        run: python -m unittest discover -s tests -p "test_release_scope.py" -v
+
+      - name: Report deferred validation
+        if: always()
+        run: |
+          echo "Tests requiring a real UE editor, physical input, real human takeover, a GUI,"
+          echo "or external MCP services are NOT part of this CI run."
+          echo "They are manual / live validation. See docs/STATUS.md."

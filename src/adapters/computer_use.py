@@ -1,4 +1,7 @@
-"""Computer Use 适配器 —— 对接 E:\\MCP\\Agent-TARS。
+"""Computer Use 适配器 —— 对接外部 Computer Use MCP 服务（占位符 `<AGENT_TARS_ROOT>`）。
+
+服务地址由本机 `config/agent.config.json` 的 `mcp_servers.computer_use.base_url`
+决定（默认 `http://127.0.0.1:8788`），UHA 不假定任何固定的磁盘安装位置。
 
 这是**唯一**负责与 Computer Use MCP 通信的地方。上层（skills / router）
 永远不直接拼 tool 名字，只调用本文件暴露的方法。

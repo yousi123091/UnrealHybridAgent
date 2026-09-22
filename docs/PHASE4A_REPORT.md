@@ -174,7 +174,7 @@
 1. Router quality 中 batch 历史失败样本会短期降权（健康度工作正常，但需成功样本稀释）。
 2. `uha.py batch --absolute-z` CLI 仍提示用 tools 脚本（未完全实现绝对批量 CLI）。
 3. Overlay/tk 线程告警仍在系统 Python 测试路径偶发。
-4. Git 安装后新 shell 可能需全路径：`C:\Program Files\Git\cmd\git.exe`
+4. Git 安装后新 shell 可能需全路径：`<GIT_EXE>`
 
 ---
 

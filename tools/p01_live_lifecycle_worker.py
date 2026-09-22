@@ -10,6 +10,20 @@ rows=[]
 def record(case,status,detail,**fields):
     row=dict(case=case,status=status,detail=detail,**fields);rows.append(row);print(json.dumps(row),flush=True)
 def down(vk):return bool(ctypes.windll.user32.GetAsyncKeyState(vk)&0x8000)
+def _backend_cmd():
+    """Resolve the local Computer Use backend launcher from environment.
+
+    No machine-specific path is baked into this repository. Set
+    UHA_AGENT_TARS_ROOT to the local install dir; optionally set UHA_NODE_EXE
+    if node is not on PATH. Fails loudly when unconfigured (never guesses).
+    """
+    root=os.getenv('UHA_AGENT_TARS_ROOT','')
+    if not root or not Path(root).is_dir():
+        raise RuntimeError(
+            'UHA_AGENT_TARS_ROOT is unset or not a directory; this live tool '
+            'cannot locate the local Computer Use service'
+        )
+    return [os.getenv('UHA_NODE_EXE','node'),'server/index.js','--transport','http'],root
 def main():
     x,y=map(int,sys.argv[1:3]);node=None;banner=None;cu=None
     with tempfile.TemporaryDirectory() as tmp:
@@ -18,7 +32,8 @@ def main():
         log=Path(tmp)/'node.log'
         stream=log.open('wb')
         try:
-            node=subprocess.Popen(['E:/node/node.exe','server/index.js','--transport','http'],cwd='E:/MCP/Agent-TARS',
+            cmd,cwd=_backend_cmd()
+            node=subprocess.Popen(cmd,cwd=cwd,
                 env={**os.environ,'COMPUTER_USE_PORT':str(port),'COMPUTER_USE_HOST':'127.0.0.1','COMPUTER_USE_DRY_RUN':'false'},
                 stdout=stream,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW)
             for _ in range(60):

@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import sys
 import tempfile
 import threading
@@ -33,30 +34,83 @@ from . import ue_scripts
 _REMOTE_EXEC_FILE = "remote_execution.py"
 
 
-def find_remote_execution_module(engine_root: Path | None, explicit: str | None = None) -> Path:
-    """定位引擎自带的 remote_execution.py。"""
+#: 官方 Remote Execution 模块在引擎安装目录内的固定相对位置。
+#: 这是一条 Epic 定义的路径，与具体机器无关，可安全地由 engine_root 推导。
+PLUGIN_PYTHON_REL = "Engine/Plugins/Experimental/PythonScriptPlugin/Content/Python"
+
+#: 环境变量兜底。用于 CI / 临时会话，避免在配置文件里写死绝对路径。
+ENV_REMOTE_EXEC = "UHA_UE_REMOTE_EXEC_PATH"
+
+
+def _engine_root_from_editor_exe(editor_exe: str | Path | None) -> Path | None:
+    """从编辑器可执行文件路径上溯出引擎根目录。
+
+    `<EngineRoot>/Engine/Binaries/<Platform>/UnrealEditor.exe` -> `<EngineRoot>`。
+    仅当路径形状匹配时才推导；形状不符返回 None，绝不猜测。
+    """
+    if not editor_exe:
+        return None
+    p = Path(editor_exe)
+    # .../Engine/Binaries/Win64/UnrealEditor.exe
+    # parents[0]=Binaries/<Platform>, [1]=Binaries, [2]=Engine, [3]=<EngineRoot>
+    if len(p.parents) < 4:
+        return None
+    if p.parents[2].name.lower() != "engine":
+        return None
+    return p.parents[3]
+
+
+def find_remote_execution_module(
+    engine_root: Path | None,
+    explicit: str | None = None,
+    editor_exe: str | Path | None = None,
+) -> Path:
+    """定位引擎自带的 remote_execution.py。
+
+    查找顺序（全部来自本机配置或环境变量，不含任何开发机固定路径）：
+
+        1. ``explicit``                —— config: ``ue.remote_exec_python_path``
+        2. ``engine_root``             —— config: ``ue.engine_root``
+        3. ``editor_exe`` 上溯的引擎根  —— config: ``ue.editor_exe``
+        4. 环境变量 ``UHA_UE_REMOTE_EXEC_PATH``
+
+    一个都找不到就抛 ``BackendUnavailable``——不猜测、不静默降级到别的通道。
+    """
     candidates: list[Path] = []
-    if explicit:
-        p = Path(explicit)
-        candidates.append(p if p.suffix == ".py" else p / _REMOTE_EXEC_FILE)
-    if engine_root:
-        candidates.append(
-            Path(engine_root)
-            / "Engine/Plugins/Experimental/PythonScriptPlugin/Content/Python"
-            / _REMOTE_EXEC_FILE
-        )
-    candidates.extend(
-        Path(p)
-        for p in (
-            r"E:\UnrealEngine\UE_5.8\Engine\Plugins\Experimental\PythonScriptPlugin\Content\Python\remote_execution.py",
-        )
-    )
+
+    def _add_file(p: str | Path | None) -> None:
+        if not p:
+            return
+        q = Path(p)
+        candidates.append(q if q.suffix == ".py" else q / _REMOTE_EXEC_FILE)
+
+    def _add_engine_root(root: str | Path | None) -> None:
+        if not root:
+            return
+        candidates.append(Path(root) / PLUGIN_PYTHON_REL / _REMOTE_EXEC_FILE)
+
+    # 1) 显式路径：可以是文件路径，也可以是目录
+    _add_file(explicit)
+    # 2) 引擎根目录
+    _add_engine_root(engine_root)
+    # 3) 由编辑器可执行文件上溯出的引擎根目录
+    _add_engine_root(_engine_root_from_editor_exe(editor_exe))
+    # 4) 环境变量兜底（同样接受文件或目录）
+    _add_file(os.getenv(ENV_REMOTE_EXEC) or None)
+
+    seen: set[Path] = set()
     for c in candidates:
+        if c in seen:
+            continue
+        seen.add(c)
         if c.is_file():
             return c
+
     raise BackendUnavailable(
-        "找不到引擎自带的 remote_execution.py。请在 config 里设置 ue.remote_exec_python_path "
-        "指向 <Engine>/Plugins/Experimental/PythonScriptPlugin/Content/Python"
+        "找不到引擎自带的 remote_execution.py。请在本机 config/agent.config.json 中配置以下任一项："
+        f"ue.remote_exec_python_path（指向 <UE_ROOT>/{PLUGIN_PYTHON_REL}/{_REMOTE_EXEC_FILE}）、"
+        f"ue.engine_root（<UE_ROOT>）、ue.editor_exe，或设置环境变量 {ENV_REMOTE_EXEC}。"
+        "UHA 不会猜测本机路径；未配置时该通道按不可用处理。"
     )
 
 
@@ -96,6 +150,7 @@ class UEPythonBackend(UnrealBackend):
         *,
         engine_root: str | Path | None = None,
         remote_exec_python_path: str | None = None,
+        editor_exe: str | Path | None = None,
         multicast_group: str = "239.0.0.1",
         multicast_port: int = 6766,
         multicast_ttl: int = 0,
@@ -108,7 +163,9 @@ class UEPythonBackend(UnrealBackend):
     ):
         super().__init__(timeout=timeout, dry_run=dry_run)
         self.engine_root = Path(engine_root) if engine_root else None
-        self.remote_exec_path = find_remote_execution_module(self.engine_root, remote_exec_python_path)
+        self.remote_exec_path = find_remote_execution_module(
+            self.engine_root, remote_exec_python_path, editor_exe
+        )
         self.project_file = project_file
         self._mod = load_remote_execution(self.remote_exec_path)
         self._discovery_timeout_s = float(discovery_timeout_s)

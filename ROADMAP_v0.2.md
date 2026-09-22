@@ -10,4 +10,18 @@
 6. 干净机器安装验收、受支持 UE 版本矩阵、长期 CPU/内存/子进程泄漏与 p95；提高异常审计和日志脱敏。
 7. 发布前清理公开候选树与完整历史秘密审计，明确许可证和第三方依赖；经用户明确指令才创建/推送远程仓库。
 
-UAH 保持同仓库 ACTIVE FIRST-CLASS。不扩展手机、账号、云同步；界面仅修复实际使用问题。ControlOverlay 没有迁移必要前保持现状。
+## UAH 的定位（重要，避免误读）
+
+UAH 作为**同仓库中长期 first-class 子系统**保留并继续开发，源码不移除。
+
+但是——**在 `v0.1.0-rc.1` 当前公开 Release 范围中，UAH 的 HUD 与 standalone
+entry points 暂不启用**；legacy `ControlOverlay` 同样暂停，且无法通过旧配置重新启用。
+发布门禁会阻止它们启动（见 `tests/test_release_scope.py`）。
+
+因此：
+
+- 不要按历史报告里的 HUD 启动命令验收本版本；
+- `uah/` 下的源码是**下一版的工作基础**，不是本 Release 已交付的功能；
+- 当前权威状态见 [`docs/STATUS.md`](docs/STATUS.md)。
+
+不扩展手机、账号、云同步；界面仅修复实际使用问题。ControlOverlay 没有迁移必要前保持现状。

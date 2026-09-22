@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 """桌面 HUD 的**真实窗口**冒烟测试。
 
-必须用**带 tkinter 的解释器**跑（本机是系统 Python 3.12；项目 ``.venv`` 没有 tkinter）：
+必须用**带 tkinter 的解释器**跑（原验证机上是系统 Python 3.12；该机器的项目 ``.venv`` 没有 tkinter）：
 
-    "C:/Users/PUBLIC_USER/AppData/Local/Programs/Python/Python312/python.exe" uah/tests/gui_smoke.py
+    <PYTHON_EXE> uah/tests/gui_smoke.py
+
+``<PYTHON_EXE>`` 指你本机带 tkinter 的解释器（Windows 常见位置形如
+``%LOCALAPPDATA%/Programs/Python/Python312/python.exe``）。不要照抄历史报告里的
+具体路径——每台机器不同。
 
 它不做断言式的"单元测试"，而是真的：起 Hub → 建窗口 → 灌两个 Agent 的事件 →
 让 Tk 事件循环跑起来 → 检查卡片真的被创建、状态文本真的对 → 关窗口。
