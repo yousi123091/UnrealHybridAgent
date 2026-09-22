@@ -1,9 +1,9 @@
 # UnrealHybridAgent（UHA）
 
-[![CI](https://github.com/yousi123091/uha/actions/workflows/ci.yml/badge.svg)](https://github.com/yousi123091/uha/actions/workflows/ci.yml)
+[![CI](https://github.com/yousi123091/UnrealHybridAgent/actions/workflows/ci.yml/badge.svg)](https://github.com/yousi123091/UnrealHybridAgent/actions/workflows/ci.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/yousi123091/uha?include_prereleases)](https://github.com/yousi123091/uha/releases)
+[![Release](https://img.shields.io/github/v/release/yousi123091/UnrealHybridAgent?include_prereleases)](https://github.com/yousi123091/UnrealHybridAgent/releases)
 
 **UnrealHybridAgent / UHA —— 面向 Unreal Engine 5 的混合 AI Agent 自动化运行时。**
 
