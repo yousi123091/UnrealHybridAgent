@@ -1,16 +1,40 @@
-> Public edition: project names are anonymized; historical measurements are retained.
-
 # UnrealHybridAgent（UHA）
 
-## 本次源码发布范围
+**让 AI Agent 在 Unreal Engine 中完成场景查询、批量编辑、保存与结果验证。**
 
-本次优先发布 UHA；UAH HUD 与旧 ControlOverlay 已禁用，代码保留供下一版本修复。不能通过旧配置重新启用这两个入口。P0 Safety Banner、输入 gate、接管和紧急停止不属于这次禁用范围。
+UHA 是面向 UE5 的混合自动化运行时：把任务拆成步骤，为每一步选择执行通道，并在操作后重新读取场景状态。它将 Unreal MCP、UE Python 和桌面操作接入同一条执行流程，让场景自动化从任务规划走到可核对的结果。
 
-UAH Phase 1 在发布准备中出现异步状态测试失败；旧 ControlOverlay 在带 tkinter 的 Python 上出现 Tcl 线程退出异常。此次选择禁用，**不宣称已经修复**。历史报告仅描述过去的开发环境，不是这个发布副本的完整验收证明。
+## UHA 能做什么
 
-公开语义配置名称为 `example_palace`；项目专属名称已匿名化。请使用配置模板填写自己的环境，不要照搬历史报告中的磁盘路径。独立工具中仍有验证机专用路径，运行真实 UE/Computer Use 工具前必须检查；不要批量执行 `tools/`。
+- **查询与检查场景**：查找 Actor，读取位置、旋转、缩放、标签和边界信息；围绕指定对象收集事实，并比较前后变化。
+- **执行多步编辑任务**：把已支持的自然语言指令或参数任务组织成计划，串联查找、检查、移动、复查与保存。
+- **批量修改与恢复**：批量处理目标对象，在变更前记录 transform，并提供恢复后读回验证。
+- **选择执行通道**：结合能力与健康状态选择 Unreal MCP、UE Python 等通道；为适用任务提供桌面键鼠操作路径。
+- **验证实际结果**：操作后独立检查场景状态，区分成功、失败和证据不足，帮助定位部分失败的具体对象。
+- **诊断与追踪执行过程**：查看后端健康状态，记录路由、执行、验证和恢复事件，便于复盘自动化任务。
+- **支持人工接管**：通过独立安全提示、输入许可检查、紧急停止和接管状态锁存，为桌面操作提供控制边界。
 
-### Windows 安装
+## 典型工作流
+
+**查找目标 Actor → 读取当前状态 → 执行位移 → 重新读取确认 → 保存关卡。**
+
+例如，对已支持的指令生成计划：
+
+```powershell
+.\.venv\Scripts\python.exe uha.py plan "把「Hall_Floor」抬高 20，然后保存"
+```
+
+`plan` 用于查看计划。配置好 UE 和执行服务后，可通过现有 skill 执行编辑任务：
+
+```powershell
+.\.venv\Scripts\python.exe uha.py run --skill actor_move --actor Hall_Floor --axis z --delta 20
+```
+
+将示例 Actor 名替换为工程中的实际对象。更多流程见 [演示说明](docs/DEMO.md)。
+
+## Windows 安装
+
+准备 Python 3.12，以及需要接入的 Unreal Engine 和外部服务。在项目根目录执行：
 
 ```powershell
 py -3.12 -m venv .venv
@@ -18,27 +42,21 @@ py -3.12 -m venv .venv
 Copy-Item config/agent.config.example.json config/agent.config.json
 ```
 
-仅在本机配置不存在时复制模板，然后编辑 UE、工程与服务路径。真实配置必须保持在 Git 之外。本机全新虚拟环境安装已经验证；其他机器及完整真实 UE 链路仍需各自验证。
+仅在本机配置不存在时复制模板，随后填写 UE、工程与服务路径。查看通道状态：
 
+```powershell
+.\.venv\Scripts\python.exe uha.py providers
+```
 
-## 原开发目录的历史验收状态（2026-09-22）
+真实配置留在本地。公开场景语义配置使用 `example_palace` 名称，可作为项目配置的参考。
 
-**本机 v0.1：READY WITH KNOWN ISSUES；P4B 安全阻塞解除（受支持范围内 UNBLOCKED）。** 完整适配器链路三项真人接管已通过；hook 清理、窗口资源生命周期、单/双进程故障与 30 次循环已补强并完成自动验证。76 项安全收尾检查和十组完整回归通过，140 个 Python 文件编译失败 0。
+## v0.1 预发布
 
-查看 [最终收尾证据与限制](docs/P0_1_FINAL_VALIDATION_REPORT.md)。不是零延迟或任意故障保证；公开仓库发布仍需历史秘密审计。旧报告里的 BLOCKED/NOT READY 保留为历史阶段，以最终收尾报告为准。
+本次提供 UHA 源码与测试，适合在自己的验证工程中体验场景自动化。发布副本已完成本机新虚拟环境安装、11 组 UHA / 发布范围回归与 169 个 Python 文件语法检查。
 
-本轮交付：[P4B](PHASE4B_REPORT.md)、[P4C](PHASE4C_REPORT.md)、[完整结论](UHA_V0_1_FEASIBILITY_REPORT.md)、[质量与性能](docs/PERFORMANCE_AND_QUALITY_REPORT.md)、[后续路线](ROADMAP_v0.2.md)。以下原有章节保留历史设计依据；当前限制以这些报告为准。
+查看 [v0.1.0-rc.1 版本说明](docs/releases/v0.1.0-rc.1.md)。
 
-历史 UAH 功能源码保留，但本次发布禁用 UAH 接入、独立 CLI 与旧 ControlOverlay；下个版本再处理。不要按历史报告中的 HUD 启动命令验收本版本。独立 P0 Safety Banner、输入 gate 和紧急停止保持启用。
-
-结构化后端统一进入 ProviderGateway，运行 `python uha.py providers` 查看真实健康状态。Computer Use 的输入经本机独立 SendInput 执行器及释放守护进程；Agent-TARS 保留共享租约和截图，不再执行 nut-js 动作。取消不是操作系统零延迟保证；结构化远端调用只能停止后续派发，不能假称已终止远端执行。
-
-已发现 UE 回调中创建/加载关卡可触发引擎断言，UHA 拒绝这类脚本。测试应在启动编辑器时指定 `/Game/UHAValidation/` 专用关卡；不要在实时 RPC 中替换世界。复杂网格支撑不能只凭 AABB 判定。
-
-安装：Windows Python 3.12/3.13；创建虚拟环境后 `python -m pip install -r requirements.txt`，复制示例配置到 `config/agent.config.json` 并填写本机 UE、工程和外部服务路径。此清单列出当前已测试的直接依赖，未做全新机器安装验收。服务安装与账号不随源码提供。
-
-本公开源码副本不包含原开发仓库的 Git 历史、运行日志、真实配置及原始验收证据。文档中的项目名称和个人路径已经匿名化；历史测量值未改写。
-
+## 执行架构
 
 **UE5 混合自动化运行时** —— 让一个 Agent 在真实 UE 编辑器里干活：自动挑执行方式、失败自动降级、干完自动复验；并且**在它不确定的时候拒绝动手**。
 
@@ -221,3 +239,57 @@ artifacts/    截图等产物
 
 本仓库自有代码以 MIT 发布，见 [`LICENSE`](LICENSE)。
 第三方依赖各自遵循其原许可（详见 LICENSE 末尾的第三方说明）。
+
+
+## 当前版本范围
+
+- 本版本聚焦 UHA；UAH HUD 与旧 ControlOverlay 暂停启用，留待后续版本。独立 P0 Safety Banner、输入 gate 和紧急停止仍保留。
+- 已验证环境为本机 Windows；新的机器、UE 版本和工程需要各自验证。外部服务需单独安装配置。
+- 复杂网格支撑证据不足时返回 UNKNOWN；执行中的远端操作取消能力取决于后端。运行真实编辑前应确认任务计划和目标工程。
+- 部分诊断工具保留验证机路径，使用前需检查。公开文档中的项目名称和个人路径已匿名化。
+
+<details>
+<summary>历史验收记录与发布准备说明</summary>
+
+以下记录用于追溯原开发环境；当前发布范围以上文为准。
+
+## 本次源码发布范围
+
+本次优先发布 UHA；UAH HUD 与旧 ControlOverlay 已禁用，代码保留供下一版本修复。不能通过旧配置重新启用这两个入口。P0 Safety Banner、输入 gate、接管和紧急停止不属于这次禁用范围。
+
+UAH Phase 1 在发布准备中出现异步状态测试失败；旧 ControlOverlay 在带 tkinter 的 Python 上出现 Tcl 线程退出异常。此次选择禁用，**不宣称已经修复**。历史报告仅描述过去的开发环境，不是这个发布副本的完整验收证明。
+
+公开语义配置名称为 `example_palace`；项目专属名称已匿名化。请使用配置模板填写自己的环境，不要照搬历史报告中的磁盘路径。独立工具中仍有验证机专用路径，运行真实 UE/Computer Use 工具前必须检查；不要批量执行 `tools/`。
+
+### Windows 安装
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+Copy-Item config/agent.config.example.json config/agent.config.json
+```
+
+仅在本机配置不存在时复制模板，然后编辑 UE、工程与服务路径。真实配置必须保持在 Git 之外。本机全新虚拟环境安装已经验证；其他机器及完整真实 UE 链路仍需各自验证。
+
+
+## 原开发目录的历史验收状态（2026-09-22）
+
+**本机 v0.1：READY WITH KNOWN ISSUES；P4B 安全阻塞解除（受支持范围内 UNBLOCKED）。** 完整适配器链路三项真人接管已通过；hook 清理、窗口资源生命周期、单/双进程故障与 30 次循环已补强并完成自动验证。76 项安全收尾检查和十组完整回归通过，140 个 Python 文件编译失败 0。
+
+查看 [最终收尾证据与限制](docs/P0_1_FINAL_VALIDATION_REPORT.md)。不是零延迟或任意故障保证；公开仓库发布仍需历史秘密审计。旧报告里的 BLOCKED/NOT READY 保留为历史阶段，以最终收尾报告为准。
+
+本轮交付：[P4B](PHASE4B_REPORT.md)、[P4C](PHASE4C_REPORT.md)、[完整结论](UHA_V0_1_FEASIBILITY_REPORT.md)、[质量与性能](docs/PERFORMANCE_AND_QUALITY_REPORT.md)、[后续路线](ROADMAP_v0.2.md)。以下原有章节保留历史设计依据；当前限制以这些报告为准。
+
+历史 UAH 功能源码保留，但本次发布禁用 UAH 接入、独立 CLI 与旧 ControlOverlay；下个版本再处理。不要按历史报告中的 HUD 启动命令验收本版本。独立 P0 Safety Banner、输入 gate 和紧急停止保持启用。
+
+结构化后端统一进入 ProviderGateway，运行 `python uha.py providers` 查看真实健康状态。Computer Use 的输入经本机独立 SendInput 执行器及释放守护进程；Agent-TARS 保留共享租约和截图，不再执行 nut-js 动作。取消不是操作系统零延迟保证；结构化远端调用只能停止后续派发，不能假称已终止远端执行。
+
+已发现 UE 回调中创建/加载关卡可触发引擎断言，UHA 拒绝这类脚本。测试应在启动编辑器时指定 `/Game/UHAValidation/` 专用关卡；不要在实时 RPC 中替换世界。复杂网格支撑不能只凭 AABB 判定。
+
+安装：Windows Python 3.12/3.13；创建虚拟环境后 `python -m pip install -r requirements.txt`，复制示例配置到 `config/agent.config.json` 并填写本机 UE、工程和外部服务路径。此清单列出当前已测试的直接依赖，未做全新机器安装验收。服务安装与账号不随源码提供。
+
+本公开源码副本不包含原开发仓库的 Git 历史、运行日志、真实配置及原始验收证据。文档中的项目名称和个人路径已经匿名化；历史测量值未改写。
+
+
+
+</details>
