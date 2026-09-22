@@ -1,0 +1,16 @@
+{
+  "name": "example_palace",
+  "description": "ExamplePalace project semantic profile. Multi-level floors are elevated grounds, not world-ground drops.",
+  "rules": [
+    {"pattern": "EXT_Plaza|ImperialRoad|RoadEdge", "role": "GROUND", "ground_kind": "GLOBAL_GROUND", "support_strategy": "ground_gap", "confidence": 0.9},
+    {"pattern": "CorrFloor|CorrLinkFloor|EXT_CorrFloor|GalleryLow_Floor", "role": "ELEVATED_GROUND", "ground_kind": "ELEVATED_GROUND", "support_strategy": "ground_gap_local", "inspection_strategy": "local_support_only", "confidence": 0.85, "reason": "elevated corridor floors are legal multi-level grounds"},
+    {"pattern": "Hall_Floor|Porch_Floor", "role": "ELEVATED_GROUND", "ground_kind": "ELEVATED_GROUND", "support_strategy": "ground_gap_local", "confidence": 0.85},
+    {"pattern": "Roof_|_Roof|Eave|Crown", "role": "STRUCTURE", "ground_kind": null, "support_strategy": "structure_trace", "inspection_strategy": "no_world_drop", "confidence": 0.88},
+    {"pattern": "Beam|Rafter|Pier|Column|Pillar|Skirt|Platform_", "role": "STRUCTURE", "support_strategy": "structure_trace", "confidence": 0.85},
+    {"pattern": "DoorJamb|DoorLeaf|DoorLintel|Door_", "role": "STRUCTURE", "support_strategy": "structure_trace", "confidence": 0.82},
+    {"pattern": "Throne_", "role": "DECORATIVE_STRUCTURE", "support_strategy": "attach_check", "confidence": 0.78},
+    {"pattern": "EXT_Marker|MarkerPost", "role": "MARKER", "inspection_strategy": "ignore_geometry", "support_strategy": "none", "confidence": 0.85, "reason": "scene markers are not floating candidates"},
+    {"pattern": "Hanging|Lantern|吊灯", "role": "HANGING", "support_strategy": "none", "confidence": 0.9},
+    {"pattern": "Wall_|SideWall|Shell_", "role": "STRUCTURE", "support_strategy": "structure_trace", "confidence": 0.8}
+  ]
+}

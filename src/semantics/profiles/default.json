@@ -1,0 +1,12 @@
+{
+  "name": "default",
+  "description": "Built-in conservative profile. Prefer UNKNOWN over wrong confidence.",
+  "rules": [
+    {"pattern": "Plaza|Floor|Ground|Terrain|Road", "role": "GROUND", "ground_kind": "GLOBAL_GROUND", "confidence": 0.85},
+    {"pattern": "Roof|Eave|Beam|Column|Pier|Wall|Platform|Foundation", "role": "STRUCTURE", "support_strategy": "structure_trace", "confidence": 0.85},
+    {"pattern": "Hanging|Lantern|Pendant|吊灯", "role": "HANGING", "support_strategy": "none", "confidence": 0.9},
+    {"pattern": "DoorJamb|DoorLeaf|DoorLintel|Door_", "role": "STRUCTURE", "support_strategy": "structure_trace", "confidence": 0.8},
+    {"pattern": "Throne", "role": "DECORATIVE_STRUCTURE", "support_strategy": "attach_check", "confidence": 0.75},
+    {"pattern": "Marker", "role": "MARKER", "inspection_strategy": "ignore_geometry", "confidence": 0.8}
+  ]
+}

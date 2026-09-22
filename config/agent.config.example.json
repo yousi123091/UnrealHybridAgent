@@ -1,0 +1,200 @@
+{
+  "$comment": "Copy to agent.config.json and configure local paths. Local configuration must never be committed.",
+  "workspace": {
+    "root": ".",
+    "log_dir": "logs",
+    "state_dir": ".state",
+    "artifact_dir": "artifacts"
+  },
+  "ue": {
+    "$comment": "Unreal Engine installation + the UE project the agent should drive.",
+    "engine_root": "",
+    "editor_exe": "",
+    "editor_cmd_exe": "",
+    "project_file": "",
+    "remote_exec_python_path": "",
+    "remote_exec": {
+      "enabled": true,
+      "multicast_group": "239.0.0.1",
+      "multicast_port": 6766,
+      "multicast_ttl": 0,
+      "bind_address": "127.0.0.1",
+      "discovery_timeout_s": 3.0,
+      "command_timeout_s": 30.0
+    },
+    "commandlet": {
+      "$comment": "Offline transport. Runs UnrealEditor-Cmd.exe -run=pythonscript. No running editor required, but it CANNOT touch an already-open editor session.",
+      "enabled": true,
+      "timeout_s": 900,
+      "extra_args": [
+        "-unattended",
+        "-nopause",
+        "-nosplash",
+        "-NoSound",
+        "-NullRHI"
+      ]
+    },
+    "search_paths": {
+      "$comment": "Directories searched for the .uproject when project_file is not set.",
+      "project_roots": []
+    }
+  },
+  "mcp_servers": {
+    "$comment": "External dependencies are configured locally and are not bundled.",
+    "root": "",
+    "computer_use": {
+      "enabled": true,
+      "kind": "computer_use",
+      "transport": "http",
+      "base_url": "http://127.0.0.1:8788",
+      "endpoint": "/mcp",
+      "call_endpoint": "/call",
+      "health_endpoint": "/health",
+      "token": "",
+      "autostart": {
+        "enabled": false,
+        "cwd": "",
+        "command": [
+          "node",
+          "server/index.js",
+          "--transport",
+          "http"
+        ],
+        "health_wait_s": 20
+      },
+      "request_timeout_s": 120
+    },
+    "unreal_mcp": {
+      "enabled": true,
+      "kind": "unreal_mcp",
+      "transport": "auto",
+      "$comment": "Configure an installed MCP server. Empty settings must report unavailable; never fabricate healthy status.",
+      "stdio": {
+        "command": "",
+        "args": [],
+        "env": {}
+      },
+      "http": {
+        "base_url": "",
+        "endpoint": "/mcp",
+        "token": ""
+      },
+      "tool_contract": "unreal_mcp",
+      "probe_tools": [
+        "get_actors_in_level",
+        "find_actors_by_name",
+        "set_actor_location",
+        "get_actor_properties",
+        "save_current_level"
+      ],
+      "request_timeout_s": 60
+    },
+    "windows_mcp": {
+      "enabled": false,
+      "$comment": "Windows UI Automation MCP. Detected at %USERPROFILE%/.windows-mcp-env/.venv/Scripts/windows-mcp.exe. Disabled by default because it is redundant with computer_use for most UE5 work.",
+      "kind": "uia",
+      "transport": "stdio",
+      "stdio": {
+        "command": "%USERPROFILE%/.windows-mcp-env/.venv/Scripts/windows-mcp.exe",
+        "args": [],
+        "env": {}
+      },
+      "request_timeout_s": 60
+    }
+  },
+  "router": {
+    "$comment": "Adaptive tool routing. Weights are tunable; the router is intentionally NOT a hardcoded task->tool table.",
+    "max_fallback_attempts": 4,
+    "max_failures_per_method": 2,
+    "method_cooldown_s": 60,
+    "exploration_rate": 0.0,
+    "stats_file": ".state/routing_stats.json",
+    "weights": {
+      "success_rate": 0.42,
+      "latency": 0.18,
+      "precision": 0.16,
+      "cost": 0.14,
+      "risk": 0.1
+    },
+    "preferences": {
+      "prefer_structured_over_gui": true,
+      "prefer_mcp_over_python": false
+    }
+  },
+  "desktop": {
+    "$comment": "Real mouse/keyboard control coordination.",
+    "session_lock_file": ".state/desktop.session.lock",
+    "session_lock_ttl_s": 180,
+    "acquire_remote_lock": true,
+    "queue_timeout_s": 300,
+    "dry_run": false,
+    "overlay": {
+      "enabled": false
+    }
+  },
+  "vision": {
+    "$comment": "Pluggable visual reasoning. backend=heuristic works with zero model and zero API key.",
+    "backend": "heuristic",
+    "vlm": {
+      "base_url": "",
+      "model": "",
+      "api_key_env": "UHA_VLM_API_KEY",
+      "max_image_side": 1568,
+      "timeout_s": 120
+    },
+    "cache": {
+      "enabled": true,
+      "dir": ".state/vision_cache",
+      "max_entries": 200
+    },
+    "diff": {
+      "downscale_to_width": 320,
+      "changed_pixel_threshold": 12,
+      "changed_ratio_threshold": 0.012
+    },
+    "roi": {
+      "$comment": "Cached screen regions (logical px) so we do not re-analyse the whole screen every step. Calibrate with `uha roi calibrate`.",
+      "world_outliner": null,
+      "details_panel": null,
+      "viewport": null,
+      "toolbar": null
+    }
+  },
+  "safety": {
+    "require_preview_above": 10,
+    "never_delete_assets": true,
+    "never_modify_core_config": true,
+    "auto_save_before_mutation": true,
+    "use_transaction_if_available": true,
+    "max_actors_per_batch": 500
+  },
+  "uah": {
+    "$comment": "Deferred from this release. Source is retained for the next version; the release gate prevents startup.",
+    "enabled": false,
+    "host": "127.0.0.1",
+    "port": 8789,
+    "agent_id": "uha",
+    "agent_name": "UHA",
+    "agent_type": "uha",
+    "phase_label": "Phase 4B",
+    "heartbeat_s": 10,
+    "stale_after_s": 20,
+    "auto_start_desktop_hud": false,
+    "embedded": {
+      "enabled": true,
+      "log": true,
+      "console": false
+    },
+    "notify": {
+      "sound": true,
+      "toast": false
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "console": true,
+    "file": true,
+    "max_bytes": 5242880,
+    "backup_count": 5
+  }
+}

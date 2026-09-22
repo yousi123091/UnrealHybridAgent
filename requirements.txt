@@ -1,0 +1,5 @@
+# Direct runtime dependencies, versions exercised on the validation machine.
+httpx==0.28.1
+Pillow==12.3.0
+pywin32==312; sys_platform == "win32"
+# tkinter ships with the standard Windows Python installer; it is not a pip package.

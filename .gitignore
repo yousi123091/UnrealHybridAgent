@@ -1,0 +1,109 @@
+# ---------------------------------------------------------------------------
+# UnrealHybridAgent — .gitignore
+# Rule of thumb: never commit secrets, user directories, or third-party trees.
+# ---------------------------------------------------------------------------
+
+# --- Secrets / local overrides -------------------------------------------------
+.env
+.env.*
+!.env.example
+config/agent.config.json
+config/local.*.json
+*.key
+*.pem
+secrets.json
+
+# --- Python --------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.venv/
+.venv-mcp/
+venv/
+env/
+ENV/
+# third-party trees pulled in at runtime (never vendored)
+_thirdparty/
+
+# --- Node / JS tooling (only used when adapting JS-based MCP servers) ----------
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# --- Runtime artefacts ---------------------------------------------------------
+logs/
+*.log
+!.gitkeep
+runtime/
+.state/
+cache/
+*.pid
+*.lock
+
+# --- 临时调试产物（下划线前缀 = 一次性的，别提交） ------------------------------
+_*.log
+_*.txt
+_*.py
+_*_out.txt
+!tools/probes/*.py
+
+# --- Vision / screenshot artefacts --------------------------------------------
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.webp
+!docs/assets/*.png
+!docs/assets/*.jpg
+
+# --- UE test fixtures (generated locally, never committed) ---------------------
+tests/fixtures/
+tests/_artifacts/
+examples/_out/
+
+# --- Unreal private projects (NEVER commit someone's .uproject content) -------
+*.uproject
+Content/
+DerivedDataCache/
+Intermediate/
+Saved/
+Binaries/
+Build/
+*.umap
+*.uasset
+*.uexp
+*.ubulk
+
+# --- OS / editor chatter -------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+
+# Local approval capabilities and per-user HUD placement
+.state/uah/approval-*.token
+.state/uah/window.json
+.workbuddy/
+
+# Publication hygiene
+/artifacts/
+/outputs/
+/publish-audit/
+/release-assets/
+!**/__init__.py
+!**/__main__.py
