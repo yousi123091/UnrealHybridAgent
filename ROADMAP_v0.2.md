@@ -14,7 +14,7 @@
 
 UAH 作为**同仓库中长期 first-class 子系统**保留并继续开发，源码不移除。
 
-但是——**在 `v0.1.0-rc.1` 当前公开 Release 范围中，UAH 的 HUD 与 standalone
+但是——**在 `v0.1.0-rc.2` 当前公开 Release 范围中，UAH 的 HUD 与 standalone
 entry points 暂不启用**；legacy `ControlOverlay` 同样暂停，且无法通过旧配置重新启用。
 发布门禁会阻止它们启动（见 `tests/test_release_scope.py`）。
 

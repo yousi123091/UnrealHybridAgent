@@ -9,8 +9,8 @@ release notes in [`docs/releases/`](releases/)).
 
 ## Current Release
 
-**`v0.1.0-rc.1`** — source prerelease.
-Release notes: [`docs/releases/v0.1.0-rc.1.md`](releases/v0.1.0-rc.1.md)
+**`v0.1.0-rc.2`** — source prerelease.
+Release notes: [`docs/releases/v0.1.0-rc.2.md`](releases/v0.1.0-rc.2.md)
 
 Validated environment: **Windows, Python 3.12** (on the validation machine).
 Other machines, UE versions, and UE projects require their own validation —
@@ -64,7 +64,7 @@ These are the parts that are actually enabled in this release.
 
 ## Deferred
 
-These are **explicitly out of scope for `v0.1.0-rc.1`**. They are not claimed as
+These are **explicitly out of scope for `v0.1.0-rc.2`**. They are not claimed as
 working, even though some of them were explored during development.
 
 | Deferred item | Status |
@@ -93,7 +93,7 @@ concluded *at that point in time*, on the original validation machine.
   The public snapshot does not include the original git history, run logs, real
   configuration, or raw acceptance evidence.
 - They are **not** a statement of current capability. A report saying something
-  was implemented does **not** mean it is ACTIVE in `v0.1.0-rc.1`.
+  was implemented does **not** mean it is ACTIVE in `v0.1.0-rc.2`.
 - Paths inside them (`<UHA_ROOT>`, `<PYTHON_EXE>`, `<UE_ROOT>`, …) are
   **anonymised placeholders**. Historical measurement values were **not** rewritten.
 

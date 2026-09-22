@@ -57,7 +57,7 @@ UHA：               结构化工具优先 → 执行 → 重新读取真实状�
 | **演示 / 复现步骤** | [`docs/DEMO.md`](docs/DEMO.md) |
 | **实测发现（踩坑与数据）** | [`docs/FINDINGS.md`](docs/FINDINGS.md) |
 | **安全机制** | [已知限制](#已知限制) · [`P0_COMPUTER_USE_SAFETY_REPORT.md`](P0_COMPUTER_USE_SAFETY_REPORT.md) |
-| **Release 说明** | [`docs/releases/v0.1.0-rc.1.md`](docs/releases/v0.1.0-rc.1.md) |
+| **Release 说明** | [`docs/releases/v0.1.0-rc.2.md`](docs/releases/v0.1.0-rc.2.md) |
 | **路线图** | [`ROADMAP_v0.2.md`](ROADMAP_v0.2.md) · [`docs/ROADMAP.md`](docs/ROADMAP.md) |
 | **第三方依赖** | [`docs/DEPENDENCIES.md`](docs/DEPENDENCIES.md) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) |
 
@@ -103,12 +103,12 @@ Copy-Item config/agent.config.example.json config/agent.config.json
 本次提供 UHA 源码与测试，适合在自己的验证工程中体验场景自动化。发布副本已完成
 本机新虚拟环境安装、11 组 UHA / 发布范围回归与 169 个 Python 文件语法检查。
 
-当前 Release：**`v0.1.0-rc.1`**。
+当前 Release：**`v0.1.0-rc.2`**。
 **权威状态见 [`docs/STATUS.md`](docs/STATUS.md)** —— 包含 Active 功能、Deferred 项
 （UAH HUD / standalone 入口 / legacy ControlOverlay 等本版本均不启用），
 以及历史报告的解读规则。
 
-查看 [v0.1.0-rc.1 版本说明](docs/releases/v0.1.0-rc.1.md)。
+查看 [v0.1.0-rc.2 版本说明](docs/releases/v0.1.0-rc.2.md)。
 
 ## 执行架构
 
@@ -292,14 +292,14 @@ artifacts/    截图等产物
 | [`docs/FINDINGS.md`](docs/FINDINGS.md) | **实测发现**：五条踩坑记录与数据（含两次"看起来正常其实错了"的复盘） |
 | [`docs/DEMO.md`](docs/DEMO.md) | Demo1 / Demo2 的复现步骤、真实输出与故障排查 |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | 第一版没做的事，以及为什么 |
-| [`docs/releases/v0.1.0-rc.1.md`](docs/releases/v0.1.0-rc.1.md) | v0.1.0-rc.1 版本说明 |
+| [`docs/releases/v0.1.0-rc.2.md`](docs/releases/v0.1.0-rc.2.md) | v0.1.0-rc.2 版本说明 |
 | [`docs/DEPENDENCIES.md`](docs/DEPENDENCIES.md) | 第三方依赖、如何指向本机安装、是否可替换 |
 | [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) | 许可与归属声明（本仓库代码为 MIT） |
 
 ### 历史报告（开发过程证据，不是当前能力声明）
 
 以下文件记录**开发过程**中的设计、验收、复盘与根因分析。它们有历史价值，
-但**不代表 `v0.1.0-rc.1` 当前提供的能力**。判断当前状态请以
+但**不代表 `v0.1.0-rc.2` 当前提供的能力**。判断当前状态请以
 [`docs/STATUS.md`](docs/STATUS.md) 为准。
 
 | 类别 | 文件 |
